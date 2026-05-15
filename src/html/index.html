@@ -1,1 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameScope — Game Lookup</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f13;
+            color: #e8e8e8;
+            min-height: 100vh;
+        }
 
+        /* ── Header ── */
+        header {
+            padding: 24px 32px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #fff;
+        }
+        .logo-dot { color: #9b78e8; }
+
+        /* ── Hero ── */
+        .hero {
+            max-width: 680px;
+            margin: 64px auto 0;
+            padding: 0 24px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 44px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #fff;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+        .hero h1 span { color: #9b78e8; }
+        .hero p {
+            font-size: 15px;
+            color: #7a7a8a;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        /* ── Search form ── */
+        /*
+            method="GET" → data appears in URL as /search?game=...
+            action="/search" → goes to our server's /search route
+        */
+        .search-wrap {
+            display: flex;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: border-color 0.2s;
+        }
+        .search-wrap:focus-within { border-color: rgba(155,120,232,0.6); }
+        .search-wrap input {
+            flex: 1;
+            background: rgba(255,255,255,0.04);
+            border: none;
+            color: #e8e8e8;
+            font-size: 15px;
+            padding: 14px 18px;
+            outline: none;
+        }
+        .search-wrap input::placeholder { color: #4a4a5a; }
+        .search-wrap button {
+            background: #6441a5;
+            border: none;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 14px 24px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .search-wrap button:hover { background: #7d5bbe; }
+
+        /* ── Quick search chips ── */
+        .chips-label {
+            font-size: 11px;
+            color: #4a4a5a;
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 48px;
+        }
+        .chip {
+            font-size: 12px;
+            color: #9a9a9a;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 999px;
+            padding: 5px 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .chip:hover {
+            background: rgba(100,65,165,0.2);
+            border-color: rgba(155,120,232,0.4);
+            color: #c8b8f8;
+        }
+
+        /* ── Section headings ── */
+        .section {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px 48px;
+        }
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #5a5a6a;
+        }
+        .section-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(155,120,232,0.15);
+            color: #9b78e8;
+            font-weight: 500;
+        }
+
+        /* ── Genre grid ── */
+        .genre-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .genre-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            transition: all 0.15s;
+        }
+        .genre-card:hover {
+            background: rgba(100,65,165,0.15);
+            border-color: rgba(155,120,232,0.3);
+            transform: translateY(-1px);
+        }
+        .genre-icon { font-size: 22px; margin-bottom: 8px; }
+        .genre-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #d0d0d0;
+            margin-bottom: 2px;
+        }
+        .genre-sub { font-size: 11px; color: #5a5a6a; }
+
+        /* ── How it works ── */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        .step-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 18px;
+        }
+        .step-num {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #4a4a5a;
+            margin-bottom: 6px;
+        }
+        .step-title { font-size: 13px; font-weight: 600; color: #c0c0c0; margin-bottom: 4px; }
+        .step-desc { font-size: 11px; color: #5a5a6a; line-height: 1.5; }
+        .step-api { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; margin-top: 8px; display: inline-block; }
+        .api-twitch { background: rgba(100,65,165,0.2); color: #9b78e8; }
+        .api-rawg   { background: rgba(29,158,117,0.15); color: #5dcaa5; }
+        .api-server { background: rgba(255,255,255,0.06); color: #7a7a8a; }
+
+        footer {
+            text-align: center;
+            padding: 32px;
+            font-size: 11px;
+            color: #333;
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-text">Game<span class="logo-dot">Scope</span></div>
+</header>
+
+<div class="hero">
+    <h1>Find any game's<br><span>rating + live stats</span></h1>
+    <p>Search a game — your server calls Twitch to find it, then RAWG for ratings, poster, and details. All combined in one page.</p>
+
+    <form action="/search" method="GET">
+        <div class="search-wrap">
+            <input
+                type="text"
+                name="game"
+                id="game-input"
+                placeholder="Search a game name..."
+                autocomplete="off"
+                autofocus
+                required
+            >
+            <button type="submit">Search</button>
+        </div>
+    </form>
+
+    <div class="chips-label">Popular searches</div>
+    <div class="chips">
+        <a class="chip" onclick="go('Minecraft')">Minecraft</a>
+        <a class="chip" onclick="go('Elden Ring')">Elden Ring</a>
+        <a class="chip" onclick="go('Fortnite')">Fortnite</a>
+        <a class="chip" onclick="go('Cyberpunk 2077')">Cyberpunk 2077</a>
+        <a class="chip" onclick="go('Stardew Valley')">Stardew Valley</a>
+        <a class="chip" onclick="go('The Witcher 3')">The Witcher 3</a>
+        <a class="chip" onclick="go('Infinity Nikki')">Infinity Nikki</a>
+        <a class="chip" onclick="go('Valorant')">Valorant</a>
+        <a class="chip" onclick="go('Genshin Impact')">Genshin Impact</a>
+    </div>
+</div>
+
+<!-- How it works -->
+<div class="section">
+    <div class="section-header">
+        <span class="section-title">How it works</span>
+        <span class="section-badge">CS355 mashup</span>
+    </div>
+    <div class="steps-grid">
+        <div class="step-card">
+            <div class="step-num">Step 1</div>
+            <div class="step-title">You search</div>
+            <div class="step-desc">Type a game name and submit. Browser sends GET /search?game=... to your Node.js server.</div>
+            <span class="step-api api-server">Your Server</span>
+        </div>
+        <div class="step-card">
+            <div class="step-num">Step 2 — API 1</div>
+            <div class="step-title">Twitch confirms</div>
+            <div class="step-desc">Server then calls /helix/games to get the official name and live viewer count.</div>
+            <span class="step-api api-twitch">Twitch API</span>
+        </div>
+        <div class="step-card">
+            <div class="step-num">Step 3 — API 2</div>
+            <div class="step-title">RAWG details</div>
+            <div class="step-desc">Only after Twitch responds, server calls RAWG for rating, poster, genres, and platforms.</div>
+            <span class="step-api api-rawg">RAWG API</span>
+        </div>
+        <div class="step-card">
+            <div class="step-num">Step 4</div>
+            <div class="step-title">Results page</div>
+            <div class="step-desc">Server combines both responses and sends you one complete results page — no client-side JS needed.</div>
+            <span class="step-api api-server">Your Server</span>
+        </div>
+    </div>
+</div>
+
+<footer>GameScope — CS355 Final Project Spring 2026 &nbsp;·&nbsp; Twitch API + RAWG &nbsp;·&nbsp; Node.js</footer>
+
+<script>
+    function go(name) {
+        document.getElementById('game-input').value = name;
+        document.querySelector('form').submit();
+    }
+</script>
+
+</body>
+</html>
