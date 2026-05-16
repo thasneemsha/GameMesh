@@ -1,0 +1,13 @@
+# Cache — delete before submitting; do not commit tokens
+cache/
+
+# In case credentials are accidentally left with real values
+# (keep the template file, but ignore if you put real keys in)
+# auth/credentials.json   ← uncomment this line if you put real keys in
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# No node_modules should exist, but just in case
+node_modules/
